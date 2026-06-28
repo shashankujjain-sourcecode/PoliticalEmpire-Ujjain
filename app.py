@@ -1,177 +1,106 @@
 import streamlit as st
 
-st.set_page_config(
-    page_title="Political Empire",
-    page_icon="🗳️",
-    layout="wide"
-)
+from engine.player import Player
+from engine.scenario import ScenarioLoader
+from engine.election import Election
 
 
-# -------------------------
-# INITIAL PLAYER
-# -------------------------
-
-def init_game():
-
-    if "player" not in st.session_state:
-
-        st.session_state.player = {
-
-            "name": "Shashank",
-
-            "money": 5000,
-
-            "land": 0.50,
-
-            "popularity": 5,
-
-            "trust": 10,
-
-            "supporters": 20,
-
-            "year": 2002,
-
-            "stage": "Student Union Election",
-
-            "turn": 1
-        }
+st.set_page_config(page_title="Political Empire",layout="wide")
 
 
-init_game()
+if "player" not in st.session_state:
+
+    st.session_state.player=Player()
+
+if "election" not in st.session_state:
+
+    st.session_state.election=Election()
+
+loader=ScenarioLoader("data/scenarios/student_union_2002.json")
+
+player=st.session_state.player
+
+election=st.session_state.election
+
+turn=player.turn
 
 
-# -------------------------
-# SIDEBAR
-# -------------------------
+st.title("🗳 Political Empire")
 
-st.sidebar.title("Player")
-
-p = st.session_state.player
-
-st.sidebar.metric("Money", f"₹{p['money']}")
-st.sidebar.metric("Land", f"{p['land']} Acre")
-st.sidebar.metric("Popularity", f"{p['popularity']}%")
-st.sidebar.metric("Trust", f"{p['trust']}%")
-st.sidebar.metric("Supporters", p["supporters"])
-
-st.sidebar.divider()
-
-if st.sidebar.button("Reset Game"):
-
-    del st.session_state.player
-    st.rerun()
+st.subheader("Student Union Election 2002")
 
 
-# -------------------------
-# MAIN
-# -------------------------
+col1,col2=st.columns([1,2])
 
-st.title("🗳️ Political Empire")
-
-st.subheader("Ujjain Campaign")
-
-col1, col2 = st.columns(2)
 
 with col1:
 
-    st.info(f"""
-**Year**
+    st.metric("Money",f"₹{player.money}")
 
-{p["year"]}
+    st.metric("Land",player.land)
 
-**Stage**
+    st.metric("Popularity",player.popularity)
 
-{p["stage"]}
 
-**Turn**
+    st.divider()
 
-{p["turn"]}/10
-""")
+    st.write("### Survey")
+
+    st.progress(election.groups["bio"]/100)
+
+    st.caption(f"Bio Support")
+
+    st.progress(election.groups["commerce"]/100)
+
+    st.caption("Commerce Support")
+
+    st.progress(election.groups["arts"]/100)
+
+    st.caption("Arts Support")
+
+    st.progress(election.groups["girls"]/100)
+
+    st.caption("Girls Support")
 
 
 with col2:
 
-    st.success("""
-Goal
+    if turn<=len(loader.data["turns"]):
 
-✔ Win Election
+        scene=loader.get_turn(turn)
 
-✔ Save Maximum Money
+        st.header(f"Turn {turn}")
 
-✔ Increase Land
+        st.info(scene["issue"])
 
-✔ Build Popularity
-""")
+        option=st.radio(
 
+            "Decision",
 
-st.divider()
+            range(len(scene["choices"])),
 
-st.header("Current Situation")
+            format_func=lambda i:scene["choices"][i]["text"]
 
-st.write(
-"""
-Bio students are demanding sports equipment before the election.
+        )
 
-If you support them, Bio votes will increase,
-but your campaign budget will reduce.
-"""
-)
+        if st.button("Confirm Decision"):
 
-choice = st.radio(
+            selected=scene["choices"][option]
 
-    "Choose your action",
+            cost=election.apply_choice(selected)
 
-    [
+            player.money+=cost
 
-        "Give Sports Kit (₹1000)",
+            player.turn+=1
 
-        "Girls Rally (₹2000)",
-
-        "Posters (₹300)",
-
-        "Ignore Everyone"
-
-    ]
-)
-
-
-if st.button("Confirm Decision"):
-
-    if choice == "Give Sports Kit (₹1000)":
-
-        p["money"] -= 1000
-        p["popularity"] += 5
-        p["supporters"] += 10
-
-        st.success("Bio students are happy.")
-
-    elif choice == "Girls Rally (₹2000)":
-
-        p["money"] -= 2000
-        p["trust"] += 5
-        p["popularity"] += 3
-
-        st.success("Girls support increased.")
-
-    elif choice == "Posters (₹300)":
-
-        p["money"] -= 300
-        p["popularity"] += 2
-
-        st.success("Campaign visibility increased.")
+            st.rerun()
 
     else:
 
-        p["trust"] -= 2
+        st.success("Election Finished")
 
-        st.warning("Students are unhappy.")
+        total=sum(election.groups.values())
 
-    p["turn"] += 1
-
-    if p["turn"] > 10:
+        st.metric("Estimated Votes",total)
 
         st.balloons()
-
-        st.success("Election Finished (Result Screen will be added in Commit 002)")
-
-    st.rerun()
