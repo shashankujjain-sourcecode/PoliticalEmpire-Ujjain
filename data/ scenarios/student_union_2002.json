@@ -1,1 +1,75 @@
+{
+    "title": "Student Union Election 2002",
 
+    "turns": [
+
+        {
+
+            "issue":"Bio students demand Sports Kits",
+
+            "choices":[
+
+                {
+
+                    "text":"Provide Sports Kits",
+
+                    "money":-1000,
+
+                    "bio":20,
+
+                    "girls":0
+
+                },
+
+                {
+
+                    "text":"Ignore",
+
+                    "money":0,
+
+                    "bio":-10,
+
+                    "girls":0
+
+                }
+
+            ]
+
+        },
+
+        {
+
+            "issue":"Girls demand Cultural Festival",
+
+            "choices":[
+
+                {
+
+                    "text":"Organize Festival",
+
+                    "money":-2000,
+
+                    "bio":0,
+
+                    "girls":20
+
+                },
+
+                {
+
+                    "text":"Reject Demand",
+
+                    "money":0,
+
+                    "bio":0,
+
+                    "girls":-10
+
+                }
+
+            ]
+
+        }
+
+    ]
+}
